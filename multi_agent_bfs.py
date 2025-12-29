@@ -1,10 +1,7 @@
 
-# ============================
-# Multi-Agent BFS Pipeline (Concept, improved)
-# - Small, fast, no chat template required
-# - Clear toggles for bullet vs sentence outputs
-# - CLI args, better parsing, non-interactive mode
-# ============================
+
+# Multi-Agent BFS Pipeline
+
 
 from __future__ import annotations
 import sys
@@ -16,9 +13,8 @@ from collections import deque
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# ----------------------------
 # CLI
-# ----------------------------
+
 
 def build_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Tiny multi-agent BFS concept pipeline")
@@ -35,9 +31,8 @@ def build_args() -> argparse.Namespace:
     p.add_argument("--debug", action="store_true", help="Print agent debug lines")
     return p.parse_args()
 
-# ----------------------------
 # Device & reproducibility
-# ----------------------------
+
 
 def setup_device_and_seed(seed: int) -> str:
     torch.manual_seed(seed)
@@ -49,9 +44,9 @@ def setup_device_and_seed(seed: int) -> str:
         return "mps"
     return "cpu"
 
-# ----------------------------
+
 # Model loading
-# ----------------------------
+
 
 def load_model_and_tokenizer(model_name: str, device: str):
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
@@ -68,9 +63,8 @@ def load_model_and_tokenizer(model_name: str, device: str):
     model.eval()
     return model, tokenizer
 
-# ----------------------------
 # Generation helpers
-# ----------------------------
+
 
 @dataclass
 class GenConfig:
@@ -110,9 +104,8 @@ def ask_llm(model, tokenizer, device, system: str, user: str, gen_cfg: GenConfig
     prompt = f"System: {system}\nUser: {user}\nAssistant:"
     return complete(model, tokenizer, device, prompt, gen_cfg)
 
-# ----------------------------
 # Agents
-# ----------------------------
+
 
 @dataclass
 class Agent:
@@ -168,9 +161,9 @@ class Agent:
         self.learn(out)
         return out
 
-# ----------------------------
+
 # BFS role expansion (preview)
-# ----------------------------
+
 
 def bfs_spawn(roles: List[str], max_depth: int) -> Dict[int, List[str]]:
     if max_depth < 0:
@@ -195,9 +188,9 @@ def bfs_spawn(roles: List[str], max_depth: int) -> Dict[int, List[str]]:
         seen += 1
     return levels
 
-# ----------------------------
+
 # Idea source
-# ----------------------------
+
 
 def is_interactive_stdin() -> bool:
     try:
@@ -226,9 +219,9 @@ def ask_or_generate_initial_idea(model, tokenizer, device, gen_cfg: GenConfig, p
     print(f"[INFO] Auto-generated initial idea: {idea}")
     return idea
 
-# ----------------------------
+
 # Pipeline
-# ----------------------------
+
 
 def run_pipeline(args: argparse.Namespace):
     device = setup_device_and_seed(args.seed)
